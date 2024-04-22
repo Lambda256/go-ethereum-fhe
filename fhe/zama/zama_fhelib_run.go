@@ -3,11 +3,33 @@ package zama_fhe
 import (
 	"fmt"
 	"math/big"
+	"os"
 )
 
-type ZamaFhe struct{}
+type ZamaFhe struct {
+	sks []byte
+}
 
-func (z ZamaFhe) FheAddRun(input []byte) ([]byte, error) {
+func (z *ZamaFhe) GetType() string {
+	return "ZAMA"
+}
+
+func (z *ZamaFhe) InitKey() {
+	var keysDirPath, present = os.LookupEnv("FHEVM_GO_KEYS_DIR")
+	fmt.Println("ZAMA keysDirPath :", keysDirPath)
+	if present {
+		sksBytes, err := initGlobalKeysFromFiles(keysDirPath)
+		if err != nil {
+			panic(err)
+		}
+		z.sks = sksBytes
+		fmt.Println("INFO: global keys are initialized automatically using FHEVM_GO_KEYS_DIR env variable")
+	} else {
+		fmt.Println("INFO: global keys aren't initialized automatically (FHEVM_GO_KEYS_DIR env variable not set)")
+	}
+}
+
+func (z *ZamaFhe) FheAddRun(input []byte) ([]byte, error) {
 
 	//fmt.Println("len(sks) : ", len(sks))
 	leftValue, rightValue := getLefetAndRightValue(input)
@@ -18,7 +40,18 @@ func (z ZamaFhe) FheAddRun(input []byte) ([]byte, error) {
 	return bytes[:], nil
 }
 
-func (z ZamaFhe) FheSubRun(input []byte) ([]byte, error) {
+func (z *ZamaFhe) FheAddScalarRun(input []byte) ([]byte, error) {
+
+	//fmt.Println("len(sks) : ", len(sks))
+	leftValue, rightValue := getLefetAndRightValue(input)
+
+	value := leftValue + rightValue
+	value += 5
+	//bytes := Uint256ToBytes(uint64(value))
+	return input[:], nil
+}
+
+func (z *ZamaFhe) FheSubRun(input []byte) ([]byte, error) {
 	leftValue, rightValue := getLefetAndRightValue(input)
 	value := leftValue - rightValue
 	value += 5
@@ -26,7 +59,15 @@ func (z ZamaFhe) FheSubRun(input []byte) ([]byte, error) {
 	return bytes[:], nil
 }
 
-func (z ZamaFhe) FheLeRun(input []byte) ([]byte, error) {
+func (l *ZamaFhe) FheSubScalarRun(input []byte) ([]byte, error) {
+	//leftValue, rightValue := getLefetAndRightValue(input)
+	//value := leftValue - rightValue
+	value := 5
+	bytes := Uint256ToBytes(uint64(value))
+	return bytes[:], nil
+}
+
+func (z *ZamaFhe) FheLeRun(input []byte) ([]byte, error) {
 	leftValue, rightValue := getLefetAndRightValue(input)
 	value := 0
 	if leftValue <= rightValue {
@@ -37,43 +78,42 @@ func (z ZamaFhe) FheLeRun(input []byte) ([]byte, error) {
 
 }
 
-func (z ZamaFhe) FheLtRun(input []byte) ([]byte, error) {
+func (z *ZamaFhe) FheLtRun(input []byte) ([]byte, error) {
 
 	return nil, nil
 }
 
-func (z ZamaFhe) FheEqRun(input []byte) ([]byte, error) {
+func (z *ZamaFhe) FheEqRun(input []byte) ([]byte, error) {
 
 	return nil, nil
 }
 
-func (z ZamaFhe) FheGeRun(input []byte) ([]byte, error) {
+func (z *ZamaFhe) FheGeRun(input []byte) ([]byte, error) {
 
 	return nil, nil
 }
 
-func (z ZamaFhe) FheGtRun(input []byte) ([]byte, error) {
+func (z *ZamaFhe) FheGtRun(input []byte) ([]byte, error) {
 
 	return nil, nil
 }
 
-func (z ZamaFhe) FheNeRun(input []byte) ([]byte, error) {
+func (z *ZamaFhe) FheNeRun(input []byte) ([]byte, error) {
 
 	return nil, nil
 }
 
-func (z ZamaFhe) FheNotRun(input []byte) ([]byte, error) {
+func (z *ZamaFhe) FheNotRun(input []byte) ([]byte, error) {
 
 	return nil, nil
 }
 
-func (z ZamaFhe) TrivialEncryptRun(input []byte) ([]byte, error) {
+func (z *ZamaFhe) TrivialEncryptRun(input []byte) ([]byte, error) {
 	ret := []byte{0}
 	return ret, nil
 }
 
 func getLefetAndRightValue(input []byte) (uint32, uint32) {
-	fmt.Println("input[0:32] : ", input[0:32])
 	leftValue := BytesToUint32(input[0:32])
 	rightValue := BytesToUint32(input[32:64])
 	return leftValue, rightValue

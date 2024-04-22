@@ -49,15 +49,27 @@ func GetFheLibMethod(signature uint32) (fheLibMethod *FheLibMethod, found bool) 
 var fhelibMethods = []*FheLibMethod{
 	{
 		name:                "fheAdd",
-		arg_types:           "(uint256,uint256,bytes1)",
+		arg_types:           "(bytes,bytes)",
 		requiredGasFunction: fheAddSubRequiredGas,
 		runFunction:         fheAddRun,
 	},
 	{
+		name:                "fheAddScalar",
+		arg_types:           "(uint256,bytes)",
+		requiredGasFunction: fheAddSubRequiredGas,
+		runFunction:         fheAddScalarRun,
+	},
+	{
 		name:                "fheSub",
-		arg_types:           "(uint256,uint256,bytes1)",
+		arg_types:           "(bytes,bytes)",
 		requiredGasFunction: fheAddSubRequiredGas,
 		runFunction:         fheSubRun,
+	},
+	{
+		name:                "fheSubScalar",
+		arg_types:           "(uint256,bytes)",
+		requiredGasFunction: fheAddSubRequiredGas,
+		runFunction:         fheSubScalarRun,
 	},
 	{
 		name:                "fheLe",

@@ -120,7 +120,9 @@ type EVM struct {
 	// callGasTemp holds the gas available for the current call. This is needed because the
 	// available gas is calculated in gasCall* according to the 63/64 rule and later
 	// applied in opCall*.
-	callGasTemp uint64
+	callGasTemp     uint64
+	isGasEstimation bool
+	isEthCall       bool
 }
 
 // NewEVM returns a new EVM. The returned EVM is not thread safe and should
@@ -129,6 +131,8 @@ func NewEVM(blockCtx BlockContext, txCtx TxContext, statedb StateDB, chainConfig
 	// If basefee tracking is disabled (eth_call, eth_estimateGas, etc), and no
 	// gas prices were specified, lower the basefee to 0 to avoid breaking EVM
 	// invariants (basefee < feecap)
+	isGasEstimation := config.IsGasEstimation
+	isEthCall := config.IsEthCall
 	if config.NoBaseFee {
 		if txCtx.GasPrice.BitLen() == 0 {
 			blockCtx.BaseFee = new(big.Int)
@@ -138,12 +142,14 @@ func NewEVM(blockCtx BlockContext, txCtx TxContext, statedb StateDB, chainConfig
 		}
 	}
 	evm := &EVM{
-		Context:     blockCtx,
-		TxContext:   txCtx,
-		StateDB:     statedb,
-		Config:      config,
-		chainConfig: chainConfig,
-		chainRules:  chainConfig.Rules(blockCtx.BlockNumber, blockCtx.Random != nil, blockCtx.Time),
+		Context:         blockCtx,
+		TxContext:       txCtx,
+		StateDB:         statedb,
+		Config:          config,
+		chainConfig:     chainConfig,
+		chainRules:      chainConfig.Rules(blockCtx.BlockNumber, blockCtx.Random != nil, blockCtx.Time),
+		isGasEstimation: isGasEstimation,
+		isEthCall:       isEthCall,
 	}
 	evm.interpreter = NewEVMInterpreter(evm)
 	return evm
@@ -224,7 +230,7 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 	}
 
 	if isPrecompile {
-		ret, gas, err = RunPrecompiledContract(p, input, gas)
+		ret, gas, err = RunPrecompiledContract(p, evm, caller.Address(), addr, input, gas)
 	} else {
 		// Initialise a new contract and set the code that is to be used by the EVM.
 		// The contract is a scoped environment for this execution context only.
@@ -287,7 +293,7 @@ func (evm *EVM) CallCode(caller ContractRef, addr common.Address, input []byte, 
 
 	// It is allowed to call precompiles, even via delegatecall
 	if p, isPrecompile := evm.precompile(addr); isPrecompile {
-		ret, gas, err = RunPrecompiledContract(p, input, gas)
+		ret, gas, err = RunPrecompiledContract(p, evm, caller.Address(), addr, input, gas)
 	} else {
 		addrCopy := addr
 		// Initialise a new contract and set the code that is to be used by the EVM.
@@ -332,7 +338,7 @@ func (evm *EVM) DelegateCall(caller ContractRef, addr common.Address, input []by
 
 	// It is allowed to call precompiles, even via delegatecall
 	if p, isPrecompile := evm.precompile(addr); isPrecompile {
-		ret, gas, err = RunPrecompiledContract(p, input, gas)
+		ret, gas, err = RunPrecompiledContract(p, evm, caller.Address(), addr, input, gas)
 	} else {
 		addrCopy := addr
 		// Initialise a new contract and make initialise the delegate values
@@ -381,7 +387,7 @@ func (evm *EVM) StaticCall(caller ContractRef, addr common.Address, input []byte
 	}
 
 	if p, isPrecompile := evm.precompile(addr); isPrecompile {
-		ret, gas, err = RunPrecompiledContract(p, input, gas)
+		ret, gas, err = RunPrecompiledContract(p, evm, caller.Address(), addr, input, gas)
 	} else {
 		// At this point, we use a copy of address. If we don't, the go compiler will
 		// leak the 'contract' to the outer scope, and make allocation for 'contract'

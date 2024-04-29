@@ -12,13 +12,11 @@ import "unsafe"
 
 func mainTest() {
 
-	secretKeyPath := "/Users/kevin.park/fhe/HEaaN-0.3.0/examples/build/src/secretKeyDir/secretkey.bin"
-	cSecretKeyPath := C.CString(secretKeyPath)
 	keyDirPath := "/Users/kevin.park/fhe/HEaaN-0.3.0/examples/build/src/keyPackDir"
 	cKeyDirPath := C.CString(keyDirPath)
 
 	//generateKey(cSecretKeyPath, cKeyDirPath)
-	cryptoLab := createCrytoLab(cSecretKeyPath, cKeyDirPath)
+	cryptoLab := createCrytoLabByKeyDir(cKeyDirPath)
 	fmt.Println(cryptoLab)
 	//encryptResult := encrypt(cryptoLab, 100)
 	//fmt.Println("len(encryptResult) : ", len(encryptResult))
@@ -39,9 +37,14 @@ func generateKey(cSecretKeyPath *C.char, cKeyDirPath *C.char) {
 	C.generateKey(cSecretKeyPath, cKeyDirPath)
 }
 
-func createCrytoLab(cSecretKeyPath *C.char, cKeyDirPath *C.char) unsafe.Pointer {
+func createCrytoLabBySeceryKeyAndKeyDir(cSecretKeyPath *C.char, cKeyDirPath *C.char) unsafe.Pointer {
 
-	return C.createCrytoLab(cSecretKeyPath, cKeyDirPath)
+	return C.createCrytoLabBySeceryKeyAndKeyDir(cSecretKeyPath, cKeyDirPath)
+}
+
+func createCrytoLabByKeyDir(cKeyDirPath *C.char) unsafe.Pointer {
+
+	return C.createCrytoLabByKeyDir(cKeyDirPath)
 }
 
 func encrypt(cryptoLab unsafe.Pointer, plainText uint64) []byte {
@@ -110,7 +113,5 @@ func decrypt(cryptoLab unsafe.Pointer, goBytes []uint8) int {
 	ciphertext3.data = (*C.uchar)(unsafe.Pointer(&goBytes[0]))
 	ciphertext3.length = C.int(len(goBytes))
 	finalResult := C.decrypt(cryptoLab, ciphertext3)
-	fmt.Println("finalResult1 : ", finalResult)
-	fmt.Println("finalResult2 : ", int(finalResult))
 	return int(finalResult)
 }

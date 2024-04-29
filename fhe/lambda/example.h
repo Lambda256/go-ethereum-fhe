@@ -14,9 +14,11 @@ typedef struct {
 uint64_t myUnsigned64BitInteger;
 
 void generateKey(char* secretKeyPath,char* keyDirPath);
+void generateKey(char* secretKeyPath,char* keyDirPath);
 void* makeContext();
 void* makePack(void* contextPtr);
-void* createCrytoLab(char* secretKeyPath,char* keyDirPath);
+void* createCrytoLabBySeceryKeyAndKeyDir(char* secretKeyPath,char* keyDirPath);
+void* createCrytoLabByKeyDir(char* keyDirPath);
 ByteArray* encrypt(void *cryptoLabPtr,uint64_t plainText, ByteArray* byteArray);
 uint64_t decrypt(void *cryptoLabPtr, ByteArray byteArray);
 void initPack();

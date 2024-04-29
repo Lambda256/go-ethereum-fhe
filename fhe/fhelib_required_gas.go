@@ -54,6 +54,11 @@ func trivialEncryptRequiredGas(input []byte) uint64 {
 
 	return 0
 }
+func registerKeyRequiredGas(input []byte) uint64 {
+	input = input[:minInt(33, len(input))]
+
+	return 0
+}
 
 func fheDivRequiredGas(input []byte) uint64 {
 	input = input[:minInt(65, len(input))]

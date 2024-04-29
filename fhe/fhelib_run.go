@@ -2,6 +2,7 @@ package fhevm
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	lambda_fhe "github.com/ethereum/go-ethereum/fhe/lambda"
 	zama_fhe "github.com/ethereum/go-ethereum/fhe/zama"
 	"github.com/holiman/uint256"
@@ -24,6 +25,8 @@ type fheLibInterface interface {
 	FheNotRun(input []byte) ([]byte, error)
 	InitKey()
 	TrivialEncryptRun(input []byte) ([]byte, error)
+	RegisterKeyRun(common.StateDBForPrecompiledContract, common.Address, common.Address, []byte, bool, bool) ([]byte, error)
+	AddKeyBytesRun(common.StateDBForPrecompiledContract, common.Address, common.Address, []byte, bool, bool) ([]byte, error)
 }
 
 var fheLib fheLibInterface
@@ -54,7 +57,8 @@ func insertUniqueFheLibTypeIntoMap() {
 func assignFheTypeImplementation() {
 	var fheType, ok = os.LookupEnv("FHE_TYPE")
 	if !ok {
-		panic(fmt.Errorf("FHE_TYPE must be specified"))
+		fheType = "LAMBDA"
+		//panic(fmt.Errorf("FHE_TYPE must be specified"))
 	}
 
 	if fheLibImpl, ok := fheLibImplMap[fheType]; ok {
@@ -64,71 +68,86 @@ func assignFheTypeImplementation() {
 	}
 }
 
-func fheAddRun(input []byte) ([]byte, error) {
+func fheAddRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
 
 	return fheLib.FheAddRun(input)
 }
 
-func fheAddScalarRun(input []byte) ([]byte, error) {
+func fheAddScalarRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
 
 	return fheLib.FheAddScalarRun(input)
 }
 
-func fheSubRun(input []byte) ([]byte, error) {
+func fheSubRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
 
 	return fheLib.FheSubRun(input)
 }
 
-func fheSubScalarRun(input []byte) ([]byte, error) {
+func fheSubScalarRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
 
 	return fheLib.FheSubScalarRun(input)
 }
 
-func fheLeRun(input []byte) ([]byte, error) {
+func fheLeRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
 	input = input[:minInt(65, len(input))]
 
 	return fheLib.FheLeRun(input)
 }
 
-func fheLtRun(input []byte) ([]byte, error) {
+func fheLtRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
 	input = input[:minInt(65, len(input))]
 
 	return fheLib.FheLtRun(input)
 }
 
-func fheEqRun(input []byte) ([]byte, error) {
+func fheEqRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
 	input = input[:minInt(65, len(input))]
 
 	return fheLib.FheEqRun(input)
 }
 
-func fheGeRun(input []byte) ([]byte, error) {
+func fheGeRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
 	input = input[:minInt(65, len(input))]
 
 	return fheLib.FheGeRun(input)
 }
 
-func fheGtRun(input []byte) ([]byte, error) {
+func fheGtRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
 	input = input[:minInt(65, len(input))]
 
 	return fheLib.FheGtRun(input)
 }
 
-func fheNeRun(input []byte) ([]byte, error) {
+func fheNeRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
 	input = input[:minInt(65, len(input))]
 
 	return fheLib.FheNeRun(input)
 }
 
-func fheNotRun(input []byte) ([]byte, error) {
+func fheNotRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
 	input = input[:minInt(65, len(input))]
 
 	return fheLib.FheNotRun(input)
 }
 
-func trivialEncryptRun(input []byte) ([]byte, error) {
+func trivialEncryptRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
 	input = input[:minInt(65, len(input))]
 	return fheLib.TrivialEncryptRun(input)
+}
+
+func registerKeyRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
+	if !isGasEstimation && !isEthCall {
+		return fheLib.RegisterKeyRun(accessibleState, caller, addr, input, isEthCall, isGasEstimation)
+	}
+	return input[:], nil
+}
+
+func addKeyBytesRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
+	//accessibleState.GetState()
+	if !isGasEstimation && !isEthCall {
+		return fheLib.AddKeyBytesRun(accessibleState, caller, addr, input, isEthCall, isGasEstimation)
+	}
+	return input[:], nil
 }
 
 var globalRngSeed []byte

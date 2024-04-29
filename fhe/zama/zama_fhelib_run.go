@@ -2,6 +2,7 @@ package zama_fhe
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"os"
 )
@@ -109,6 +110,16 @@ func (z *ZamaFhe) FheNotRun(input []byte) ([]byte, error) {
 }
 
 func (z *ZamaFhe) TrivialEncryptRun(input []byte) ([]byte, error) {
+	ret := []byte{0}
+	return ret, nil
+}
+
+func (z *ZamaFhe) RegisterKeyRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
+	ret := []byte{0}
+	return ret, nil
+}
+
+func (z *ZamaFhe) AddKeyBytesRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
 	ret := []byte{0}
 	return ret, nil
 }

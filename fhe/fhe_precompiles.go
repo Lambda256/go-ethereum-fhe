@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 func FheLibRequiredGas(input []byte) uint64 {
@@ -11,9 +12,8 @@ func FheLibRequiredGas(input []byte) uint64 {
 	return 10
 }
 
-func FheLibRun(input []byte) (ret []byte, err error) {
+func FheLibRun(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) (ret []byte, err error) {
 	fmt.Println("FheLibRun!!")
-
 	if len(input) < 4 {
 		err := errors.New("input must contain at least 4 bytes for method signature")
 		return nil, err
@@ -31,7 +31,7 @@ func FheLibRun(input []byte) (ret []byte, err error) {
 	// remove function signature
 	input = input[4:]
 
-	ret, err = fheLibMethod.Run(input)
+	ret, err = fheLibMethod.Run(accessibleState, caller, addr, input, isEthCall, isGasEstimation)
 	ret = ret[:]
 
 	return

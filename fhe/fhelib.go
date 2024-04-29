@@ -3,6 +3,7 @@ package fhevm
 import (
 	"encoding/binary"
 	"errors"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
@@ -13,7 +14,7 @@ type FheLibMethod struct {
 	// types of the arguments that the fhelib function take. format is "(type1,type2...)" (e.g "(uint256,bytes1)")
 	arg_types           string
 	requiredGasFunction func(input []byte) uint64
-	runFunction         func(input []byte) ([]byte, error)
+	runFunction         func(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error)
 }
 
 func (fheLibMethod *FheLibMethod) Name() string {
@@ -33,8 +34,8 @@ func (fheLibMethod *FheLibMethod) RequiredGas(input []byte) uint64 {
 	return fheLibMethod.requiredGasFunction(input)
 }
 
-func (fheLibMethod *FheLibMethod) Run(input []byte) ([]byte, error) {
-	return fheLibMethod.runFunction(input)
+func (fheLibMethod *FheLibMethod) Run(accessibleState common.StateDBForPrecompiledContract, caller common.Address, addr common.Address, input []byte, isEthCall bool, isGasEstimation bool) ([]byte, error) {
+	return fheLibMethod.runFunction(accessibleState, caller, addr, input, isEthCall, isGasEstimation)
 }
 
 // Mapping between function signatures and the functions to call
@@ -49,25 +50,25 @@ func GetFheLibMethod(signature uint32) (fheLibMethod *FheLibMethod, found bool) 
 var fhelibMethods = []*FheLibMethod{
 	{
 		name:                "fheAdd",
-		arg_types:           "(bytes,bytes)",
+		arg_types:           "(uint256,bytes,bytes)",
 		requiredGasFunction: fheAddSubRequiredGas,
 		runFunction:         fheAddRun,
 	},
 	{
 		name:                "fheAddScalar",
-		arg_types:           "(uint256,bytes)",
+		arg_types:           "(uint256,uint256,bytes)",
 		requiredGasFunction: fheAddSubRequiredGas,
 		runFunction:         fheAddScalarRun,
 	},
 	{
 		name:                "fheSub",
-		arg_types:           "(bytes,bytes)",
+		arg_types:           "(uint256,bytes,bytes)",
 		requiredGasFunction: fheAddSubRequiredGas,
 		runFunction:         fheSubRun,
 	},
 	{
 		name:                "fheSubScalar",
-		arg_types:           "(uint256,bytes)",
+		arg_types:           "(uint256,uint256,bytes)",
 		requiredGasFunction: fheAddSubRequiredGas,
 		runFunction:         fheSubScalarRun,
 	},
@@ -118,6 +119,18 @@ var fhelibMethods = []*FheLibMethod{
 		arg_types:           "(uint256,bytes1)",
 		requiredGasFunction: trivialEncryptRequiredGas,
 		runFunction:         trivialEncryptRun,
+	},
+	{
+		name:                "registerKey",
+		arg_types:           "(uint256,uint256,uint256)",
+		requiredGasFunction: registerKeyRequiredGas,
+		runFunction:         registerKeyRun,
+	},
+	{
+		name:                "addKeyBytes",
+		arg_types:           "(uint256,bytes)",
+		requiredGasFunction: registerKeyRequiredGas,
+		runFunction:         addKeyBytesRun,
 	},
 }
 

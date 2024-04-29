@@ -1,22 +1,48 @@
 package lambda_fhe
 
 import (
-	"fmt"
 	"os"
-	"path"
+	"path/filepath"
+	"sort"
+	"strconv"
 )
 
-func initGlobalKeysFromFiles(keysDir string) ([]byte, error) {
-	if _, err := os.Stat(keysDir); os.IsNotExist(err) {
-		return nil, fmt.Errorf("init_keys: global keys directory doesn't exist (FHEVM_GO_KEYS_DIR): %s", keysDir)
-	}
-	// read keys from files
-	var sksPath = path.Join(keysDir, "sks")
-	sksBytes, err := os.ReadFile(sksPath)
+func initGlobalKeysFromFiles(keysDir string) ([]int, error) {
+
+	return getNumericSubfolders(keysDir)
+}
+
+// 폴더 내의 숫자 폴더 목록을 가져오는 함수
+func getNumericSubfolders(keysDir string) ([]int, error) {
+	var numericFolders []int
+
+	err := filepath.Walk(keysDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		// 폴더 이름이 숫자인지 확인
+		if info.IsDir() && isNumeric(filepath.Base(path)) {
+			n, err := strconv.Atoi(filepath.Base(path))
+			if err != nil {
+				return err
+			}
+			numericFolders = append(numericFolders, n)
+		}
+		return nil
+	})
+
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("INFO: global keys loaded from: " + keysDir)
 
-	return sksBytes, nil
+	// 숫자 폴더 목록 정렬
+	sort.Ints(numericFolders)
+
+	return numericFolders, nil
+}
+
+// 문자열이 숫자인지 확인하는 함수
+func isNumeric(s string) bool {
+	_, err := strconv.Atoi(s)
+	return err == nil
 }

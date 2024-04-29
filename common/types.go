@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/holiman/uint256"
 	"math/big"
 	"math/rand"
 	"reflect"
@@ -51,6 +52,59 @@ var (
 	// MaxHash represents the maximum possible hash value.
 	MaxHash = HexToHash("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
 )
+
+type StateDBForPrecompiledContract interface {
+	CreateAccount(Address)
+
+	SubBalance(Address, *uint256.Int)
+	AddBalance(Address, *uint256.Int)
+	GetBalance(Address) *uint256.Int
+
+	GetNonce(Address) uint64
+	SetNonce(Address, uint64)
+
+	GetCodeHash(Address) Hash
+	GetCode(Address) []byte
+	SetCode(Address, []byte)
+	GetCodeSize(Address) int
+
+	AddRefund(uint64)
+	SubRefund(uint64)
+	GetRefund() uint64
+
+	GetCommittedState(Address, Hash) Hash
+	GetState(Address, Hash) Hash
+	SetState(Address, Hash, Hash)
+
+	GetTransientState(addr Address, key Hash) Hash
+	SetTransientState(addr Address, key, value Hash)
+
+	SelfDestruct(Address)
+	HasSelfDestructed(Address) bool
+
+	Selfdestruct6780(Address)
+
+	// Exist reports whether the given account exists in state.
+	// Notably this should also return true for self-destructed accounts.
+	Exist(Address) bool
+	// Empty returns whether the given account is empty. Empty
+	// is defined according to EIP161 (balance = nonce = code = 0).
+	Empty(Address) bool
+
+	AddressInAccessList(addr Address) bool
+	SlotInAccessList(addr Address, slot Hash) (addressOk bool, slotOk bool)
+	// AddAddressToAccessList adds the given address to the access list. This operation is safe to perform
+	// even if the feature/fork is not active yet
+	AddAddressToAccessList(addr Address)
+	// AddSlotToAccessList adds the given (address,slot) to the access list. This operation is safe to perform
+	// even if the feature/fork is not active yet
+	AddSlotToAccessList(addr Address, slot Hash)
+
+	RevertToSnapshot(int)
+	Snapshot() int
+
+	AddPreimage(Hash, []byte)
+}
 
 // Hash represents the 32 byte Keccak256 hash of arbitrary data.
 type Hash [HashLength]byte

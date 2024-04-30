@@ -2,7 +2,7 @@ package lambda_fhe
 
 /*
 #cgo LDFLAGS: -L. -lex1-encrypt-decrypt -lstdc++ -lHEaaN -lomp
-#include "example.h"
+#include "cryptoLab.h"
 */
 import "C"
 import (

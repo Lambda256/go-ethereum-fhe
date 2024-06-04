@@ -3,7 +3,6 @@ package lambda_fhe
 import "C"
 import (
 	"bufio"
-	"encoding/binary"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
@@ -279,21 +278,11 @@ func fromEVMBytes(input []byte) []byte {
 }
 
 func checkInputOneCipherTextLength(input []byte) bool {
-	return len(input) == 524640
+	return len(input) == 33088
 }
 
 func checkInputDoubleCipherTextLength(input []byte) bool {
-	return len(input) == 1049184
-}
-
-func uintToBytes(num uint64) []byte {
-	b := make([]byte, 8)
-	binary.BigEndian.PutUint64(b, num)
-	return b
-}
-
-func bytesToUint64(b []byte) uint64 {
-	return binary.BigEndian.Uint64(b)
+	return len(input) == 66080
 }
 
 // createFileAndWriteBytes 함수는 주어진 파일 경로에 주어진 바이트 데이터를 씁니다.

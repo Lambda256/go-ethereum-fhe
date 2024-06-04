@@ -2,7 +2,6 @@ package fhevm
 
 import (
 	"encoding/binary"
-	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -146,12 +145,4 @@ func minInt(a int, b int) int {
 		return a
 	}
 	return b
-}
-
-func isScalarOp(input []byte) (bool, error) {
-	if len(input) != 65 {
-		return false, errors.New("input needs to contain two 256-bit sized values and 1 8-bit value")
-	}
-	isScalar := (input[64] == 1)
-	return isScalar, nil
 }

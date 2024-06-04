@@ -1,7 +1,7 @@
 package lambda_fhe
 
 /*
-#cgo LDFLAGS: -L. -lex1-encrypt-decrypt -lstdc++ -lHEaaN -lomp
+#cgo LDFLAGS: -L. -llambda256_cryptolab -lstdc++ -lHEaaN -lomp
 #include "cryptoLab.h"
 */
 import "C"
@@ -45,13 +45,6 @@ func createCrytoLabBySeceryKeyAndKeyDir(cSecretKeyPath *C.char, cKeyDirPath *C.c
 func createCrytoLabByKeyDir(cKeyDirPath *C.char) unsafe.Pointer {
 
 	return C.createCrytoLabByKeyDir(cKeyDirPath)
-}
-
-func encrypt(cryptoLab unsafe.Pointer, plainText uint64) []byte {
-	out := &C.ByteArray{}
-	ciphertext := C.encrypt(cryptoLab, C.uint64_t(plainText), out)
-	defer C.freeByteArray(ciphertext)
-	return C.GoBytes(unsafe.Pointer(ciphertext.data), C.int(ciphertext.length))
 }
 
 func add(cryptoLab unsafe.Pointer, goBytes1 []uint8, goBytes2 []uint8) []byte {
@@ -106,12 +99,4 @@ func subScalar(cryptoLab unsafe.Pointer, plainText uint64, goBytes []uint8) []by
 	defer C.freeByteArray(addResult)
 
 	return C.GoBytes(unsafe.Pointer(addResult.data), C.int(addResult.length))
-}
-
-func decrypt(cryptoLab unsafe.Pointer, goBytes []uint8) int {
-	var ciphertext3 C.ByteArray
-	ciphertext3.data = (*C.uchar)(unsafe.Pointer(&goBytes[0]))
-	ciphertext3.length = C.int(len(goBytes))
-	finalResult := C.decrypt(cryptoLab, ciphertext3)
-	return int(finalResult)
 }

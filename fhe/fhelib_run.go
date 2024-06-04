@@ -5,7 +5,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	lambda_fhe "github.com/ethereum/go-ethereum/fhe/lambda"
 	zama_fhe "github.com/ethereum/go-ethereum/fhe/zama"
-	"github.com/holiman/uint256"
 	"golang.org/x/crypto/chacha20"
 	"os"
 )
@@ -151,8 +150,6 @@ func addKeyBytesRun(accessibleState common.StateDBForPrecompiledContract, caller
 }
 
 var globalRngSeed []byte
-
-var rngNonceKey [32]byte = uint256.NewInt(0).Bytes32()
 
 func init() {
 	if chacha20.NonceSizeX != 24 {

@@ -36,7 +36,7 @@ func (l *LambdaFhe) InitKey() {
 		}
 		fmt.Println(" folders :", folders)
 		for _, folder := range folders {
-			keyDirPath := keysDirPath + strconv.Itoa(folder)
+			keyDirPath := keysDirPath + "/" + strconv.Itoa(folder)
 			cKeyDirPath := C.CString(keyDirPath)
 			l.CryptoLabPtrMap[uint64(folder)] = createCrytoLabByKeyDir(cKeyDirPath)
 			fmt.Println("l.CryptoLabPtrMap : ", l.CryptoLabPtrMap)

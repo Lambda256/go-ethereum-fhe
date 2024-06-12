@@ -249,10 +249,7 @@ func toOutputBytes(input []byte) []byte {
 }
 
 func toBytes(input []byte) []byte {
-	fmt.Println("len(ret)1 : ", len(input))
 	ret := common.TrimRightZeroes(input)
-	fmt.Println("len(ret)2 : ", len(ret))
-	fmt.Println("ret[:32] :", ret[:32])
 
 	ret = fromEVMBytes(ret)
 	return ret
